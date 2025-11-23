@@ -53,3 +53,8 @@ parent(haley,george).
 female(poppy).
 parent(dylan,poppy).
 parent(haley,poppy).
+
+
+marriage(jay,gloria,2008).
+marriage(jay,dede,1968).
+divorce(jay,dede,2003).
