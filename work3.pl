@@ -146,3 +146,133 @@ list_shift_rotate(List1, N, List2):-
     length(Rotated,N),
     append(Rotated,Suffix,List1),
     append(Suffix,Rotated,List2).
+
+list_to(1,[1]).
+
+list_to(N,List):-
+    N > 1,
+    N1 is N-1,
+    list_to(N1,Result),
+    append(Result,[N],List).
+
+list_from_to(End,End,[End]).
+
+list_from_to(Start,End,List):-
+    Start < End,
+    N is Start + 1,
+    list_from_to(N,End,Result),
+    append([Start],Result,List).
+
+list_from_to(Start,End,List):-
+    Start > End,
+    N is Start - 1,
+    list_from_to(N,End,Result),
+    append([Start],Result,List).
+
+list_from_to_step(End,End,_,[End]).
+list_from_to_step(Start, End, Step, List):-
+    Start < End,
+    N is Start + Step,
+    (N > End ->
+        Result = [];
+        list_from_to_step(N,End,Step,Result)
+    ),
+    append([Start],Result,List).
+
+list_from_to_step(Start, End, Step, List):-
+    Start > End,
+    N is Start - Step,
+    (N < End ->
+        Result = [];
+        list_from_to_step(N,End,Step,Result)
+    ),
+    append([Start],Result,List).
+
+is_prime(X):- X>1,
+\+ has_factor(X,2).
+
+has_factor(X,Y):- Y*Y =< X,
+X mod Y =:= 0.
+
+primes(N,List):- 
+    list_from_to(2,N,Search),
+    include(is_prime, Search, List).
+
+fibonacci(0,0).
+
+fibonacci(1,1).
+
+fibonacci(N, F):- N>1,
+    N1 is N-1,
+    fibonacci(N1,F1),
+    N2 is N-2,
+    fibonacci(N2,F2),
+    F is F1 + F2.
+
+fibs(N,List):-
+    list_from_to(0,N,Search),
+    maplist(fibonacci, Search, List).
+
+
+rle([], []).
+rle(List, [Elem-Count | Rest]) :-
+    List = [Elem | _],
+    group(=(Elem), List, Group, Tail),
+    length(Group, Count),
+    rle(Tail, Rest).
+
+unrle([],[]).
+
+unrle([Elem-Count | Tail],List):-
+    replicate(Count,Elem,Result),
+    unrle(Tail,Result2),
+    append(Result,Result2,List).
+
+is_ordered([]).
+is_ordered([_]).
+is_ordered([A|[B|T]]):-
+    A =< B,
+    is_ordered([B|T]).
+
+insert_ordered(Value, [], [Value]).
+insert_ordered(Value, [Head|Tail], [Value, Head|Tail]) :-
+    Value =< Head.
+insert_ordered(Value, [Head|Tail], [Head|NewTail]) :-
+    Value > Head,
+    insert_ordered(Value, Tail, NewTail).
+
+insert_sort([],[]).
+
+insert_sort([Head|Tail], SortedList) :-
+    insert_sort(Tail, SortedTail),
+    insert_ordered(Head, SortedTail, SortedList).
+
+xor(0,0,0).
+xor(1,0,1).
+xor(1,1,0).
+xor(0,1,1).
+
+and(0,_,0).
+and(1,1,1).
+and(1,0,0).
+
+or(0,0,0).
+or(0,1,1).
+or(1,1,1).
+or(1,0,1).
+
+full_adder(A,B,Cin,S,Cout):-
+    xor(A,B,AB),
+    xor(AB,Cin,S),
+    and(A,B,AandB),
+    and(Cin,AB,CAB),
+    or(AandB,CAB,Cout).
+
+ripple_adder(List1,List2,Result):-
+    ripple_adder_with_carry(List1,List2,0,Result).
+
+ripple_adder_with_carry([], [], Cin, [Cin]).
+
+ripple_adder_with_carry([A|T1], [B|T2], Cin, [S|Result]) :-
+    full_adder(A, B, Cin, S, Cout),
+    ripple_adder_with_carry(T1, T2, Cout, Result).
