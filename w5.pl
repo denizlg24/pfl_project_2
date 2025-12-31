@@ -396,3 +396,84 @@ dfs_excluding(Current, Dest, Visited, FC, Al, T, D) :-
     \+ (Flight = FC, Airline = Al, Time = T, Dur = D),
     \+ memberchk(Next, Visited),
     dfs_excluding(Next, Dest, [Next | Visited], FC, Al, T, D).
+
+unifiable([],_,[]).
+unifiable([H|_T],Term,Result):-
+	( \+ (Term = H) ->
+		unifiable(_T,Term,Result);
+		append([H],Result1,Result), unifiable(_T,Term,Result1)
+	).
+
+state(MissionariesLeft, CannibalsLeft, BoatSide).
+
+valid_state(state(ML, CL, _)) :-
+    ML >= 0, ML =< 3,
+    CL >= 0, CL =< 3,
+    MR is 3 - ML,
+    CR is 3 - CL,
+    (ML =:= 0 ; ML >= CL),
+    (MR =:= 0 ; MR >= CR).
+
+boat(2, 0).
+boat(1, 0).
+boat(0, 2).
+boat(0, 1).
+boat(1, 1).
+
+initial_state(state(3, 3, left)).
+goal_state(state(0, 0, right)).
+
+move(
+    state(ML, CL, left),
+    state(ML2, CL2, right)
+) :-
+    boat(M, C),
+    ML2 is ML - M,
+    CL2 is CL - C,
+    valid_state(state(ML2, CL2, right)).
+
+move(
+    state(ML, CL, right),
+    state(ML2, CL2, left)
+) :-
+    boat(M, C),
+    ML2 is ML + M,
+    CL2 is CL + C,
+    valid_state(state(ML2, CL2, left)).
+
+path(State, State, _, [State]).
+path(State, Goal, Visited, [State | Path]) :-
+    move(State, Next),
+    \+ member(Next, Visited),
+    path(Next, Goal, [Next | Visited], Path).
+
+missionaries_and_cannibals(Path-Size) :-
+    initial_state(Start),
+    goal_state(Goal),
+    path(Start, Goal, [Start], Path),
+	length(Path,States),
+	Size is States - 1.
+
+
+
+steps(Steps, N, L):-
+	setof(Path,choose_step(0,Steps,Path),L),
+	length(L,N).
+
+choose_step(Start,End,[1]):-
+	Missing is End - Start,
+	Missing = 1.
+
+choose_step(End,End,[]).
+
+choose_step(Start,End,[1|Following1]):-
+	Missing is End - Start,
+	Missing >= 2,
+	Take1 is Start + 1,
+	choose_step(Take1,End,Following1).
+
+choose_step(Start,End,[2|Following2]):-
+	Missing is End - Start,
+	Missing >= 2,
+	Take2 is Start + 2,
+	choose_step(Take2,End,Following2).
