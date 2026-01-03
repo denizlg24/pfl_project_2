@@ -90,3 +90,52 @@ fill_args(I, [A|As], Term) :-
     fill_args(I1, As, Term).
 
 :- op(700, xfx, univ).
+
+node(Value, Left,Right).
+
+tree(null).
+tree(node(Value,Left,Right)):-
+    tree(Left),
+    tree(Right).
+
+tree_size(null,0).
+
+tree_size(node(Value,Left,Right),Size):-
+    Value \= null,
+    tree_size(Left, SizeLeft),
+    tree_size(Right, SizeRight),
+    Size is 1 + SizeLeft + SizeRight.
+
+
+test_tree(node(3, node(1, null, null),
+    node(7, node(5,null,null),
+    node(9,null,null) ) )).
+
+
+tree_map(_, null, null).
+
+tree_map(Pred, node(Value,Left,Right), node(Called,CalledLeft,CalledRight)):-
+    call(Pred,Value,Called),
+    tree_map(Pred,Left,CalledLeft),
+    tree_map(Pred,Right,CalledRight).
+
+tree_value_at_level_(node(Value, _, _), Value, 0).
+tree_value_at_level_(node(_, Left, _), Value, Level) :-
+    tree_value_at_level_(Left, Value, L1),
+    Level is L1 + 1.
+tree_value_at_level_(node(_, _, Right), Value, Level) :-
+    tree_value_at_level_(Right, Value, L1),
+    Level is L1 + 1.
+
+tree_value_at_level(Tree, Value, Level) :-
+    nonvar(Value),
+    !,
+    (   tree_value_at_level_(Tree, Value, Level)
+    ->  true
+    ;   Level = -1
+    ).
+
+tree_value_at_level(Tree, Value, Level) :-
+    nonvar(Level),
+    Level >= 0,
+    tree_value_at_level_(Tree, Value, Level).
