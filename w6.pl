@@ -139,3 +139,124 @@ tree_value_at_level(Tree, Value, Level) :-
     nonvar(Level),
     Level >= 0,
     tree_value_at_level_(Tree, Value, Level).
+
+:- op(400, xfx, then).
+:- op(300, xfx, else).
+:- op(500,fx,if).
+
+:- op(500,xfx,exists_in).
+
+exists_in(X,L) :-
+    member(X,L).
+
+
+:- op(500, fx, append).
+:- op(400, xfx, to).
+:- op(300, xfx, results_in).
+
+append A to B results_in C :-
+    append(A, B, C).
+
+:- op(500,fx,remove).
+:- op(400, xfx, from).
+
+remove Elem from List results_in Result:-
+    removeElement(Elem,List,Result).
+
+removeElement(_,[],[]).
+removeElement(Elem,[H|_T],Result):-
+    removeElement(Elem,_T,Result2),
+    (Elem = H ->
+        append([],Result2,Result);
+        append([H],Result2,Result)
+        ).
+
+% sum_list([],0).
+
+% sum_list([H|_T],R):-
+%     sum_list(_T,R1),
+%     R is R1 + H.
+
+% find_one([1|_T],0).
+% find_one([_|_T],Pile):-
+%     find_one(_T,PileIndex),
+%     Pile is PileIndex + 1.
+
+% finished_state(State,(Pile,1)):-
+%     sum_list(State,Sum),
+%     Sum = 1,
+%     find_one(State,Pile).
+
+between(Min, Max, Min) :-
+    Min =< Max.
+between(Min, Max, Var) :-
+    Min < Max,
+    Next is Min + 1,
+    between(Next, Max, Var).
+
+% pile_index(State, Index) :-
+%     length(State, N),
+%     Max is N - 1,
+%     between(0, Max, Index).
+
+% transition(State,EndState,(Pile,Take)):-
+%     pile_index(State, Pile),
+%     at_index(State, Pile, Amount),
+%     Amount > 0,
+%     between(1, Amount, Take),
+%     NewAmount is Amount - Take,
+%     replace_at_index(State, Pile, EndState, NewAmount).
+
+% replace_at_index([_|_T],0,[Replace|_T],Replace).
+% replace_at_index([H|_T],Index,[H|Result],Replace):-
+%     Index1 is Index - 1,
+%     replace_at_index(_T,Index1,Result,Replace).
+
+% at_index([H|_T],0,H).
+% at_index([_|_T],Index,R):-
+%     Index1 is Index - 1,
+%     at_index(_T,Index1,R).
+
+% terminal(State) :-
+%     sum_list(State, 0).
+
+% losing(State) :-
+%     terminal(State).
+
+% losing(State) :-
+%     \+ winning(State).
+
+% winning(State) :-
+%     transition(State, NextState, _),
+%     losing(NextState).
+
+% winning_move(State, Move) :-
+%     transition(State, NextState, Move),
+%     losing(NextState).
+% my terrible way
+
+:- op(500,xfx,xor).
+
+nim_sum([], 0).
+nim_sum([H|T], R) :-
+    nim_sum(T, R1),
+    R is H xor R1.
+
+at_index([H|_], 0, H).
+at_index([_|T], Index, R) :-
+    Index1 is Index - 1,
+    at_index(T, Index1, R).
+
+index(State, I) :-
+    length(State, N),
+    N1 is N - 1,
+    between(0, N1, I).
+
+winning_move(State, (Pile, Take)) :-
+    nim_sum(State, NimSum),
+    NimSum =\= 0,
+    index(State, Pile),
+    at_index(State, Pile, Size),
+    NewSize is Size xor NimSum,
+    NewSize < Size,
+    Take is Size - NewSize.
