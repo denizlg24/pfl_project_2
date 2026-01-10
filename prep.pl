@@ -44,4 +44,21 @@ find_prefixes(List,Sum):-
 	append(Prefix,_,List),
 	list_sum(Prefix,Sum).
 
+member_once(_,[]):-fail.
+member_once(X, [H|_T]):-
+	X = H, !; member_once(X,_T).
+
+grade(Score, Grade):-
+	Score >= 90, Grade = a,!;
+	Score >= 75, Grade = b,!;
+	Score >= 50, Grade = c,!;
+	Grade = f.
+
+first_even([],_):-false.
+first_even([H|_T], Even):-
+	Remainder is H mod 2,
+	Remainder = 0,
+	Even is H, !;
+	first_even(_T,Even).
+
 
