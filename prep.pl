@@ -61,4 +61,26 @@ first_even([H|_T], Even):-
 	Even is H, !;
 	first_even(_T,Even).
 
+rev_tr(List, Reversed) :-
+    rev_acc(List, [], Reversed).
+
+rev_acc([], Acc, Acc).
+rev_acc([H|T], Acc, Reversed) :-
+    rev_acc(T, [H|Acc], Reversed).
+
+sum_until_negative(List, Sum):-
+	sum_until_negative(List,0,Sum).
+
+sum_until_negative([],0,0).
+
+sum_until_negative([H|_],Acc,Acc):-
+	H < 0.
+
+sum_until_negative([H|_T],Acc,Sum):-
+    H >= 0,
+	Sum1 is H + Acc,
+	sum_until_negative(_T,Sum1,Sum).
+
+
+
 
