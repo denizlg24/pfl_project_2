@@ -81,6 +81,77 @@ sum_until_negative([H|_T],Acc,Sum):-
 	Sum1 is H + Acc,
 	sum_until_negative(_T,Sum1,Sum).
 
+square(X,SQ):-
+	SQ is (X*X).
+
+even(X):-
+  Div is X mod 2,
+  Div = 0.
+
+map_if(_,_,[],[]).
+map_if(Pred, MapPred, [H|_T],Result):-
+	map_if(Pred,MapPred,_T,Rest),
+	(call(Pred,H) ->
+		call(MapPred,H,M),
+		append([M],Rest,Result);
+		append([H],Rest,Result)
+	).
+
+plus(A,B,S):-
+	S is A+B.
+
+fold_until(_,_,Acc0,[],Acc0).
+
+
+fold_until(Pred, Op, Acc0, [H|_T], Acc):-
+	(call(Pred,H) ->
+		call(Op,Acc0,H,Acc1),
+		fold_until(Pred,Op,Acc1,_T,Acc);
+		Acc is Acc0
+	).
+
+filter_map(_,_,[],[]).
+filter_map(Pred, MapPred, [H|_T],Result):-
+	filter_map(Pred,MapPred,_T,Rest),
+	(call(Pred,H) ->
+		call(MapPred,H,M),
+		append([M],Rest,Result);
+		append([],Rest,Result)
+	).
+
+
+balances(List, Balances):-
+	balances(List,0,Balances).
+
+apply_transaction(N,Acc,Balance):-
+	Balance is Acc + N.
+
+balances([],_,[]).
+balances([H|_T],Acc,[Acc1|Rest]):-
+	apply_transaction(H,Acc,Acc1),
+	balances(_T,Acc1,Rest).
+
+trans(Current, Symbol, Next).
+
+accepts(_,State,Finals,_,[]):-
+	member(State,Finals).
+
+accepts(States, Start, Finals, Transitions, [H|_T]):-
+	append(_,[trans(Start,H,Next)|_],Transitions),
+	accepts(States,Next,Finals,Transitions,_T).
+
+count_up_to(0):-!.
+
+count_up_to(N):-
+	N1 is N-1,
+	write(N), nl,
+	count_up_to(N1).
+
+
+
+
+
+
 
 
 
