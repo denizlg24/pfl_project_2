@@ -9,6 +9,25 @@ next_to(X,Y,[A,B,C,D,E,F]) :-
 next_to(X,Y,[A,B,C,D,E,F]) :-
 	consecutive(Y,X,[A,B,C,D,E,F]).
 
+circular_next_to(X, Y, [A,B,C,D,E,F]):-
+	next_to(X,Y,[A,B,C,D,E,F]).
+
+circular_next_to(X,Y,[X,_,_,_,_,Y]).
+circular_next_to(X,Y,[Y,_,_,_,_,X]).
+
+at_corner(A, [A,_,_,_,_,_]).
+at_corner(F, [_,_,_,_,_,F]).
+
+not_next_to(X, Y, [A,B,C,D,E,F]):-
+	get_index(X,[A,B,C,D,E,F],XIndex),
+	get_index(Y,[A,B,C,D,E,F],YIndex),
+	XIndex \== YIndex,
+	Diff is abs(XIndex-YIndex),
+	Diff > 1.
+
+between_colors(X, Middle, Y, [A,B,C,D,E,F]):-
+	append(_Prefix,[X,Middle,Y|_Suffix],[A,B,C,D,E,F]).
+
 anywhere(_X,_Board).
 
 spaced(X,Y,Board):-
@@ -38,15 +57,10 @@ same_edge(X, Y, [_A,_B,_C,D,E,F]):-
 	member(Y,[D,E,F]),
 	member(X,[D,E,F]).
 
-get_index(X,List,Pos):-
-	get_index_acc(X,List,Pos,1).
-
-get_index_acc(X,[H|_T],Pos,Acc):-
-	(X = H ->
-		Pos is Acc;
-		NewAcc is Acc + 1, get_index_acc(X,_T,Pos,NewAcc)
-		).
-
+get_index(X, [X|_], 1).
+get_index(X, [_|Rest], Index) :-
+    get_index(X, Rest, Index0),
+    Index is Index0 + 1.
 
 position(X, L, Board):-
 	pos_map(Pos,X,Board),

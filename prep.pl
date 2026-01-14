@@ -147,6 +147,286 @@ count_up_to(N):-
 	write(N), nl,
 	count_up_to(N1).
 
+compress_runs([],[]).
+
+compress_runs([H|T], Compressed):-
+	compress_runs([H|T],H,1,Compressed).
+
+compress_runs([],Prev,Acc,[Prev-Acc]).
+
+compress_runs([H|_T],H,Acc,Res):-
+	Acc1 is Acc + 1,
+	compress_runs(_T,H,Acc1,Res).
+
+compress_runs([H|_T],Prev,Acc,[Prev-Acc|Rest]):-
+	H \= Prev,
+	compress_runs(_T,H,1,Rest).
+
+diff_lists(L1, L2, Diff):-
+	findall(El,diff_lists_generator(L1,L2,El),Diff).
+
+diff_lists_generator(L1,L2,D):-
+	member(D,L1),
+	\+((
+		append(_,[D|_],L2)
+	)).
+
+apply_func(Op,State,Res,_):-
+	Op =.. [Func,Arg],
+	Func = push,
+	append(State,[Arg],Res).
+
+apply_func(Op,State,Prefix,_):-
+	Op =.. [Func],
+	Func = pop,
+	append(Prefix,[_],State).
+
+apply_func(Op,_,Last,History):-
+	Op =.. [Func],
+	Func = undo,
+	append(_,[Last],History).
+
+apply_func(Op,_,[],[]):-
+	Op =.. [Func],
+	Func = undo.
+
+apply_ops(Ops, FinalState, History):-
+	apply_ops_acc(Ops,[],FinalState,[],History,0).
+
+apply_ops_acc([],Start,Start,History,History,_).
+
+apply_ops_acc([Opp|_T],Start,FinalState,HistoryAcc,History,Count):-
+	apply_func(Opp,Start,Next,HistoryAcc),
+	(Count \= 0 -> append(HistoryAcc,[Start],HistoryAcc2); append(HistoryAcc,[],HistoryAcc2)),
+	apply_ops_acc(_T,Next,FinalState,HistoryAcc2,History,1).
+
+% is_bst(nil).
+% is_bst(t(V,L,R)):-
+% 	is_bst_left(V,L,no_max),
+% 	is_bst_right(V,R,no_min).
+
+% is_bst_left(_,nil,_):-!.
+
+% is_bst_left(Val,t(V,Left,Right),Max):-
+% 	Val > V,
+% 	(Max = no_max ->
+% 		!;
+% 		Val < Max
+% 	), 
+% 	is_bst_left(V,Left,Val),
+% 	is_bst_right(V,Right,Val).
+
+% is_bst_right(_,nil,_):-!.
+% is_bst_right(Val,t(V,Left,Right),Min):-
+% 	Val < V,
+% 		(Min = no_min ->
+% 		!;
+% 		Val > Min
+% 	), 
+	
+% 	is_bst_left(V,Left,Val),
+% 	is_bst_right(V,Right,Val).
+% WRONG IMPLEMENTATION
+
+change(Coins, Money, Selection):-
+length(Selection,_N),
+change(Coins,Money,Selection,0),
+!.
+
+change(_,Money,[],Money).
+
+change(Coins,Money,[C|Rest],Acc):-
+	member(C,Coins),
+	Acc1 is Acc + C,
+	Acc1 =< Money,
+	change(Coins,Money,Rest,Acc1).
+
+edge(a, b).
+edge(b, c).
+edge(c, a).
+edge(1, 2).
+edge(2, 3).
+edge(3, 4).
+edge(x, x).
+edge(start, mid).
+edge(mid, loop_start).
+edge(loop_start, loop_end).
+edge(loop_end, loop_start).
+edge(center, left).
+edge(left, center).
+edge(center, right).
+edge(right, center).
+edge(n1, n2).
+
+has_cycle(StartNode):-
+	has_cycle(StartNode,StartNode,[]).
+
+has_cycle(Start,Start,_Visited):-
+	edge(Start,Start),!.
+
+has_cycle(Start,Start,[Start,_|_Visited]):-!.
+
+has_cycle(Start,End,Visited):-
+	edge(Start,Next),
+	\+(member(Next,Visited)),
+	has_cycle(Next,End,[Next|Visited]).
+
+is_list([]).
+is_list([_H|_]).
+
+flatten_depth(NestedList, FlatList, MaxDepth):-
+	flatten_depth_rec(NestedList,FlatList,MaxDepth).
+
+
+flatten_depth_rec([],[],_).
+
+flatten_depth_rec([H|_T],Flat,MaxDepth):-
+	is_list(H),
+	MaxDepth > 0,
+	!,
+	MaxDepth1 is MaxDepth -1,
+	flatten_depth_rec(H,FlatHead,MaxDepth1),
+	flatten_depth_rec(_T,FlatTail,MaxDepth),
+	append(FlatHead,FlatTail,Flat).
+
+flatten_depth_rec([H|T],[H|FlatT],MaxDepth):-
+	flatten_depth_rec(T,FlatT,MaxDepth).
+
+
+
+
+
+get_index(Elem,List,Indx):-
+	get_index(Elem,List,0,Indx).
+
+get_index(H,[H|_T],Acc,Acc):-!.
+get_index(Elem,[_|_T],Acc,Final):-
+	Acc1 is Acc + 1,
+	get_index(Elem,_T,Acc1,Final).
+
+flatten([],[]).
+
+flatten([H|T],[H|Rest]):-
+	\+ is_list(H),
+	flatten(T,Rest).
+
+flatten([H|T],Res):-
+	is_list(H),
+	!,
+	flatten(H,HeadFlat),
+	flatten(T,TFlat),
+	append(HeadFlat,TFlat,Res).
+
+generate(N,[],N):-!.
+
+generate(N,[Acc|Rest],Acc):-
+	Acc1 is Acc + 1,
+	generate(N,Rest,Acc1).
+
+final(N,Board):-
+	generate(N,Prefix,1),
+	append(Prefix,[0],Board).
+
+move(Board,N,NextBoard,up):-
+	get_index(0,Board,Index),
+	Index >= N,
+	TargetIndex is Index - N,
+	get_index(Target,Board,TargetIndex),
+	swap(Board,Target,NextBoard).
+
+move(Board,N,NextBoard,left):-
+	get_index(0,Board,Index),
+	Index mod N =\= 0,
+	TargetIndex is Index - 1,
+	get_index(Target,Board,TargetIndex),
+	swap(Board,Target,NextBoard).
+
+move(Board,N,NextBoard,right):-
+	get_index(0,Board,Index),
+	Index < N*N-1,
+	TargetIndex is Index + 1,
+	get_index(Target,Board,TargetIndex),
+	swap(Board,Target,NextBoard).
+
+move(Board,N,NextBoard,down):-
+	get_index(0,Board,Index),
+	Index < N*(N-1),
+	TargetIndex is Index + N,
+	get_index(Target,Board,TargetIndex),
+	swap(Board,Target,NextBoard).
+
+sliding_puzzle([H|T], Moves):-
+	length(H,N),
+	Size is N*N,
+	final(Size,FinalBoard),
+	flatten([H|T],StartBoard),
+ 	solve_bfs(N,StartBoard,FinalBoard,Moves).
+
+dfs_puzzle(_,Goal,Goal,[],_).
+
+dfs_puzzle(N,Start,Goal,[Move|Moves],Path):-
+	move(Start,N,Next,Move),
+	\+ member(Next,Path),
+	dfs_puzzle(N,Next,Goal,Moves,[Next|Path]).
+
+reverse([],[]).
+reverse([H|_T],Result):-
+	reverse(_T,Rest),
+	append(Rest,[H],Result).
+
+
+solve_bfs(N, Start, Goal, Moves) :-
+    bfs_puzzle(N, [[Start, []]], Goal, Moves, [Start]).
+
+% 1. Base Case: The head of the queue is the Goal state.
+% We simply reverse the path (accumulated in reverse) and return it.
+bfs_puzzle(_, [[Goal, Path] | _], Goal, Moves, _Visited) :-
+    reverse(Path, Moves),!.
+
+% 2. Recursive Step
+% We ignore the 'Moves' variable here; it is only unified in the Base Case.
+bfs_puzzle(N, [[State, Path] | RestQueue], Goal, FinalMoves, Visited) :-
+    
+    % Find all valid children: returns list of [[NextState, NewPath], ...]
+    findall([Next, [Dir|Path]], (
+        move(State, N, Next, Dir),
+        \+ member(Next, Visited)       % Check if already visited
+    ), Children),
+
+    % Extract just the states from Children to add to Visited list
+    extract_states(Children, NewStates),
+    append(Visited, NewStates, NewVisited),
+
+    % Append children to the END of the queue (BFS logic)
+    append(RestQueue, Children, NewQueue),
+    
+    % Recurse
+    bfs_puzzle(N, NewQueue, Goal, FinalMoves, NewVisited).
+
+% Helper to get states out of the [State, Path] pairs for the Visited list
+extract_states([], []).
+extract_states([[State, _] | T], [State | Rest]) :-
+    extract_states(T, Rest).
+
+swap(List,Target,Result):-
+	get_index(0,List,ZeroIndex),
+	get_index(Target,List,TargetIndex),
+	TargetIndex < ZeroIndex,
+	!,
+	append(PrefixTarget,[Target|SuffixTarget],List),
+	append(PrefixZero,[0|SuffixZero],SuffixTarget),
+	append(PrefixTarget,[0|PrefixZero],Medium),
+	append(Medium,[Target|SuffixZero],Result).
+
+swap(List,Target,Result):-
+	get_index(0,List,ZeroIndex),
+	get_index(Target,List,TargetIndex),
+	TargetIndex > ZeroIndex,
+	append(PrefixTarget,[0|SuffixTarget],List),
+	append(PrefixZero,[Target|SuffixZero],SuffixTarget),
+	append(PrefixTarget,[Target|PrefixZero],Medium),
+	append(Medium,[0|SuffixZero],Result).
+
 
 
 
